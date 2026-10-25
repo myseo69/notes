@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#030406">
+<title>🧬 Nutrition Architect</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── Tokens ── */
+:root{
+  --bg:#030406;--surface:#0F172A;--border:#22304A;
+  --text:#fff;--text-2:#B6C2D4;--text-3:#8294AE;
+  --accent:#E6C14A;--amber:#D9B26A;--rose:#F87171;--blue:#38BDF8;--green:#4ADE80;
+  --r:14px;--rsm:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--bg)}
+body{
+  font-family:'Sarabun','DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.3;
+  min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;
+  padding:max(8px,env(safe-area-inset-top)) 10px max(8px,env(safe-area-inset-bottom));
+  overflow-x:hidden;
+}
+.num{font-family:'DM Sans','Sarabun',sans-serif;font-variant-numeric:tabular-nums}
+
+/* ── Layout: single column filling one screen ── */
+.app{flex:1;display:flex;flex-direction:column;gap:6px;width:100%;max-width:520px;margin:0 auto}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px}
+
+/* ── Personal info (4-up grid) ── */
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);padding:0;overflow:hidden}
+.sf{background:var(--surface);padding:6px 7px;min-width:0}
+.sf-full{grid-column:span 4}
+.sf label{display:block;font-size:11px;font-weight:600;color:var(--text-3);white-space:nowrap}
+.fld{display:flex;align-items:baseline;gap:3px;min-height:26px}
+.fld span{font-size:11px;color:var(--text-3);flex-shrink:0}
+input,select{
+  width:100%;min-width:0;min-height:26px;background:transparent;border:none;outline:none;
+  color:var(--text);font:600 16px 'DM Sans','Sarabun',sans-serif;
+  -webkit-appearance:none;appearance:none;border-radius:6px;
+}
+select{font-family:'Sarabun','DM Sans',sans-serif;cursor:pointer;text-overflow:ellipsis}
+select option{background:var(--surface);color:var(--text)}
+input:focus,select:focus{box-shadow:0 0 0 2px rgba(230,193,74,.55)}
+
+/* ── Program ── */
+.prog-ratio{font-size:12px;font-weight:600;color:var(--accent);margin-top:2px}
+
+/* ── BMR / TDEE / Target ── */
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.stat{text-align:center;padding:6px 4px}
+.stat b{display:block;font-size:11px;color:var(--text-3);font-weight:600}
+.stat strong{display:block;font-size:19px;font-weight:700;line-height:1.2;margin-top:1px}
+.stat small{font-size:10.5px;color:var(--text-3)}
+
+/* ── Macro summary ── */
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--rsm);padding:6px 3px;text-align:center;min-width:0}
+.sc-l{font-size:11px;font-weight:600;color:var(--text-2);white-space:nowrap}
+.sc-v{font-size:18px;font-weight:700;line-height:1.2;margin-top:1px}
+.sc-u{font-size:10px;color:var(--text-3);white-space:nowrap}
+.bar{height:4px;background:var(--border);border-radius:9px;margin:4px 4px 2px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:9px;transition:width .4s}
+.sc-p{font-size:10.5px;font-weight:600;color:var(--text-3)}
+.sc-p.over{color:var(--rose)}
+
+/* ── Food plan grid: fills remaining height ── */
+.plan{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:minmax(60px,1fr);gap:5px}
+.item{display:flex;align-items:center;gap:7px;background:#070B14;border:1px solid var(--border);border-radius:var(--rsm);padding:5px 8px;min-width:0}
+.item .e{font-size:22px;line-height:1;flex-shrink:0}
+.item .t{min-width:0;flex:1}
+.item .n{font-size:12.5px;font-weight:600;line-height:1.25}
+.item .q{font-size:16px;font-weight:700;color:var(--accent);line-height:1.2}
+.item .c{font-size:10.5px;color:var(--text-3);line-height:1.25}
+.item.water{background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.35)}
+.item.water .q{color:var(--blue)}
+
+/* ── Toast for input warnings (no layout shift) ── */
+.toast{position:fixed;left:10px;right:10px;top:max(8px,env(safe-area-inset-top));max-width:500px;margin:0 auto;z-index:9;
+  background:#3a1518;border:1px solid var(--rose);color:#FECACA;border-radius:var(--rsm);padding:8px 12px;
+  font-size:13px;font-weight:600;display:none}
+.toast.on{display:block}
+
+/* ── Very narrow phones ── */
+@media(max-width:340px){.sc-v{font-size:16px}.stat strong{font-size:17px}.item .q{font-size:15px}.item .e{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="toast" id="toast" role="alert"></div>
+
+<main class="app">
+  <!-- 🧍 Personal info -->
+  <section class="card sg">
+    <div class="sf"><label for="gender">⚧️ เพศ</label>
+      <div class="fld"><select id="gender"><option value="male" selected>ชาย ♂</option><option value="female">หญิง ♀</option></select></div></div>
+    <div class="sf"><label for="age">🎂 อายุ</label>
+      <div class="fld"><input class="num" type="number" id="age" value="50" inputmode="numeric" min="15" max="100" step="1"><span>ปี</span></div></div>
+    <div class="sf"><label for="height">📏 ส่วนสูง</label>
+      <div class="fld"><input class="num" type="number" id="height" value="170" inputmode="decimal" min="120" max="230" step="any"><span>ซม.</span></div></div>
+    <div class="sf"><label for="weight">⚖️ น้ำหนัก</label>
+      <div class="fld"><input class="num" type="number" id="weight" value="96" inputmode="decimal" min="30" max="250" step="any"><span>กก.</span></div></div>
+    <div class="sf sf-full"><label for="activity">🏃 ระดับกิจกรรม</label>
+      <div class="fld"><select id="activity">
+        <option value="1.2">🛋️ นั่งทำงาน · แทบไม่ออกกำลังกาย</option>
+        <option value="1.375">🚶 เบา · 1-3 วัน/สัปดาห์</option>
+        <option value="1.55" selected>🏃 ปานกลาง · 3-5 วัน/สัปดาห์</option>
+        <option value="1.725">🏋️ หนัก · 6-7 วัน/สัปดาห์</option>
+        <option value="1.9">🔥 หนักมาก · นักกีฬา/ใช้แรงงาน</option>
+      </select></div></div>
+  </section>
+
+  <!-- 🎯 Program -->
+  <section class="card">
+    <select id="program" aria-label="โปรแกรมการทาน">
+      <option value="reset">🔄 ปรับระบบเผาผลาญ (Metabolic Reset)</option>
+      <option value="cut1" selected>🔥 ลีนไขมัน รอบที่ 1 (First Cut)</option>
+      <option value="cut2">⚡ ลีนไขมัน รอบที่ 2 (Deep Cut)</option>
+    </select>
+    <div class="prog-ratio num" id="ratio"></div>
+  </section>
+
+  <!-- 📊 Energy -->
+  <section class="trio">
+    <div class="card stat"><b>🔥 BMR</b><strong class="num" id="bmr">—</strong><small>kcal/วัน</small></div>
+    <div class="card stat"><b>⚡ TDEE</b><strong class="num" id="tdee">—</strong><small>kcal/วัน</small></div>
+    <div class="card stat"><b>🎯 เป้า 80%</b><strong class="num" id="target" style="color:var(--accent)">—</strong><small>kcal/วัน</small></div>
+  </section>
+
+  <!-- 🥗 Macro summary (actual vs target) -->
+  <section class="summary" id="summary"></section>
+
+  <!-- 🍽️ Food plan + 💧 water -->
+  <section class="plan" id="plan"></section>
+</main>
+
+<script>
+/* ═══ DATA ═══ */
+// Fixed foods (ปริมาณคงที่) — carb/fat/protein in grams, cal in kcal
+const FIXED = [
+  {name:'ไข่ไก่',     emoji:'🥚', qty:'2 ฟอง',   carb:1.2, fat:10,   protein:14,  cal:140},
+  {name:'โยเกิร์ต',   emoji:'🍦', qty:'1 ถ้วย',  carb:8,   fat:4,    protein:6,   cal:100},
+  {name:'ถั่วลิสง',   emoji:'🥜', qty:'30 กรัม', carb:4.8, fat:14.5, protein:7.5, cal:170},
+  {name:'ผักใบเขียว', emoji:'🥬', qty:'400 กรัม',carb:12,  fat:0.8,  protein:8,   cal:80},
+];
+// Per 100 g (rice, pork) / per 15 ml (oil)
+const RICE = {carb:28, fat:0.3, protein:2.7, cal:130};
+const PORK = {carb:0,  fat:3.5, protein:26,  cal:143};
+const OIL  = {fat:14, cal:130};
+const SPOON_RICE_G = 80; // 1 ทัพพี ≈ 80 g
+const PROGRAMS = {
+  reset:{protein:32, carb:43, fat:25},
+  cut1: {protein:40, carb:35, fat:25},
+  cut2: {protein:48, carb:22, fat:30},
+};
+const MACRO_COLOR = {cal:'#E6C14A', carb:'#D9B26A', protein:'#4ADE80', fat:'#F87171'};
+// Input limits: [min, max, default, label, unit]
+const LIMITS = {age:[15,100,50,'อายุ','ปี'], height:[120,230,170,'ส่วนสูง','ซม.'], weight:[30,250,96,'น้ำหนัก','กก.']};
+
+/* ═══ HELPERS ═══ */
+const $ = id => document.getElementById(id);
+const fmt = (n, d = 0) => (isFinite(n) ? n : 0).toLocaleString('en-US', {minimumFractionDigits:d, maximumFractionDigits:d});
+
+// Read + validate numeric input: empty / NaN → default, out of range → clamped
+function readInput(id) {
+  const [min, max, def, label, unit] = LIMITS[id];
+  const raw = $(id).value.trim();
+  let n = parseFloat(raw), msg = '';
+  if (raw === '' || !isFinite(n)) { n = def; msg = `${label}ว่างหรือไม่ถูกต้อง · ใช้ ${def} ${unit}`; }
+  else if (n < min || n > max) { n = Math.min(max, Math.max(min, n)); msg = `${label}ต้องอยู่ระหว่าง ${min}–${max} ${unit} · ใช้ ${n}`; }
+  return {n, msg};
+}
+
+/* ═══ CALCULATION ═══ */
+// Mifflin-St Jeor
+const bmrOf = (w, h, a, male) => 10*w + 6.25*h - 5*a + (male ? 5 : -161);
+
+function getTargets(w, h, a, male, act, prog) {
+  const bmr = bmrOf(w, h, a, male), tdee = bmr * act, cal = tdee * 0.8; // กิน 80% ของ TDEE
+  return {bmr, tdee, cal,
+    carb: cal*prog.carb/100/4, protein: cal*prog.protein/100/4, fat: cal*prog.fat/100/9};
+}
+
+/* Solve order: fixed foods → rice (carb) → pork (protein left after fixed+rice) → oil (fat left).
+   Negative remainders clamp to 0 so quantities never go below zero. */
+function solve(t) {
+  const f = FIXED.reduce((s, x) => ({carb:s.carb+x.carb, fat:s.fat+x.fat, protein:s.protein+x.protein, cal:s.cal+x.cal}),
+                         {carb:0, fat:0, protein:0, cal:0});
+  const riceG = Math.max(0, t.carb - f.carb) / RICE.carb * 100;
+  const riceP = riceG/100*RICE.protein, riceF = riceG/100*RICE.fat;
+  const porkG = Math.max(0, t.protein - f.protein - riceP) / PORK.protein * 100;
+  const porkF = porkG/100*PORK.fat;
+  const oilMl = Math.max(0, t.fat - f.fat - riceF - porkF) / OIL.fat * 15;
+  const riceCal = riceG/100*RICE.cal, porkCal = porkG/100*PORK.cal, oilCal = oilMl/15*OIL.cal;
+  return {riceG, porkG, oilMl, riceCal, porkCal, oilCal, actual:{
+    cal:f.cal + riceCal + porkCal + oilCal,
+    carb:f.carb + riceG/100*RICE.carb,
+    protein:f.protein + riceP + porkG/100*PORK.protein,
+    fat:f.fat + riceF + porkF + oilMl/15*OIL.fat }};
+}
+
+/* ═══ RENDER ═══ */
+function renderSummary(t, p) {
+  const rows = [
+    ['🔥 แคลอรี่', p.actual.cal,     t.cal,     'kcal', MACRO_COLOR.cal],
+    ['🍚 คาร์บ',   p.actual.carb,    t.carb,    'g',    MACRO_COLOR.carb],
+    ['🥩 โปรตีน',  p.actual.protein, t.protein, 'g',    MACRO_COLOR.protein],
+    ['🥑 ไขมัน',   p.actual.fat,     t.fat,     'g',    MACRO_COLOR.fat],
+  ];
+  $('summary').innerHTML = rows.map(([l, v, tg, u, c]) => {
+    const pct = tg > 0 ? Math.round(v/tg*100) : 0;
+    return `<div class="sc"><div class="sc-l">${l}</div>
+      <div class="sc-v num" style="color:${c}">${fmt(v)}</div>
+      <div class="sc-u num">${u} / ${fmt(tg)}</div>
+      <div class="bar"><i style="width:${Math.min(pct,100)}%;background:${c}"></i></div>
+      <div class="sc-p num ${pct > 105 ? 'over' : ''}">${pct}%</div></div>`;
+  }).join('');
+}
+
+function renderPlan(p, w) {
+  const cell = (e, n, q, c, cls = '') =>
+    `<div class="item ${cls}"><div class="e">${e}</div><div class="t"><div class="n">${n}</div><div class="q num">${q}</div><div class="c num">${c}</div></div></div>`;
+  const zero = (v, min) => v < min;
+  const waterMl = Math.round(w * 35);
+  $('plan').innerHTML =
+    cell('🍚','ข้าวสวยสุก', zero(p.riceG,1) ? '✓ พอแล้ว' : fmt(p.riceG)+' g', `≈${fmt(p.riceG/SPOON_RICE_G,1)} ทัพพี · ${fmt(p.riceCal)} kcal`) +
+    cell('🥩','สันในหมู',  zero(p.porkG,1) ? '✓ พอแล้ว' : fmt(p.porkG)+' g', `${fmt(p.porkCal)} kcal`) +
+    FIXED.map(f => cell(f.emoji, f.name, f.qty, `คงที่ · ${f.cal} kcal`)).join('') +
+    cell('🫒','น้ำมัน', zero(p.oilMl,0.5) ? '✓ พอแล้ว' : fmt(p.oilMl,1)+' ml', `≈${fmt(p.oilMl/15,1)} ช้อนโต๊ะ · ${fmt(p.oilCal)} kcal`) +
+    cell('💧','น้ำดื่ม', fmt(waterMl/1000,1)+' ลิตร', `≈${Math.round(waterMl/250)} แก้ว · 35 มล./กก.`, 'water');
+}
+
+function update(showWarn) {
+  const inputs = ['age','height','weight'].map(readInput);
+  const [a, h, w] = inputs.map(i => i.n);
+  const male = $('gender').value === 'male';
+  const act = parseFloat($('activity').value) || 1.55;
+  const prog = PROGRAMS[$('program').value] || PROGRAMS.cut1;
+  const t = getTargets(w, h, a, male, act, prog), p = solve(t);
+
+  $('ratio').textContent = `🥩 P ${prog.protein}% · 🍚 C ${prog.carb}% · 🥑 F ${prog.fat}%`;
+  $('bmr').textContent = fmt(t.bmr);
+  $('tdee').textContent = fmt(t.tdee);
+  $('target').textContent = fmt(t.cal);
+  renderSummary(t, p);
+  renderPlan(p, w);
+
+  // Warnings shown only after the field is committed (not mid-typing)
+  const msg = inputs.map(i => i.msg).filter(Boolean).join(' · ');
+  const toast = $('toast');
+  toast.textContent = '⚠️ ' + msg;
+  toast.classList.toggle('on', !!(showWarn && msg));
+}
+
+['age','height','weight'].forEach(id => {
+  $(id).addEventListener('input', () => update(false));
+  $(id).addEventListener('change', () => update(true));
+});
+['gender','activity','program'].forEach(id => $(id).addEventListener('change', () => update(true)));
+update(false);
+</script>
+</body>
+</html>
