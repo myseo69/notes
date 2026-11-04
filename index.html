@@ -2,263 +2,1539 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#030406">
-<title>🧬 Nutrition Architect</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#242A36">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E📝%3C/text%3E%3C/svg%3E">
+<title>📝 สมุดโน้ต — Jupiter Dusk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-/* ── Tokens ── */
-:root{
-  --bg:#030406;--surface:#0F172A;--border:#22304A;
-  --text:#fff;--text-2:#B6C2D4;--text-3:#8294AE;
-  --accent:#E6C14A;--amber:#D9B26A;--rose:#F87171;--blue:#38BDF8;--green:#4ADE80;
-  --r:14px;--rsm:10px;
-}
-*{margin:0;padding:0;box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;background:var(--bg)}
-body{
-  font-family:'Sarabun','DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
-  background:var(--bg);color:var(--text);line-height:1.3;
-  min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;
-  padding:max(8px,env(safe-area-inset-top)) 10px max(8px,env(safe-area-inset-bottom));
-  overflow-x:hidden;
-}
-.num{font-family:'DM Sans','Sarabun',sans-serif;font-variant-numeric:tabular-nums}
+  /* ============================================================
+     This stylesheet is fully self-contained (no CDN dependency).
+     Google Fonts above is a progressive enhancement only — if it
+     fails to load, the font stacks below fall back to system
+     sans-serif and the app still renders and works correctly.
+     ============================================================ */
 
-/* ── Layout: single column filling one screen ── */
-.app{flex:1;display:flex;flex-direction:column;gap:6px;width:100%;max-width:520px;margin:0 auto}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px}
+  :root {
+    /* "Jupiter Dusk" — 60% dark surface / 30% slate content / 10% yellow interaction */
+    --bg-page: #242A36;        /* Primary background dark */
+    --surface: #4D5769;        /* Content: cards, inputs (white text 7:1) */
+    --surface-muted: #3A4252;  /* nested pills, form wells */
+    --field: #4D5769;
+    --border: #5E6A7E;
 
-/* ── Personal info (4-up grid) ── */
-.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);padding:0;overflow:hidden}
-.sf{background:var(--surface);padding:6px 7px;min-width:0}
-.sf-full{grid-column:span 4}
-.sf label{display:block;font-size:11px;font-weight:600;color:var(--text-3);white-space:nowrap}
-.fld{display:flex;align-items:baseline;gap:3px;min-height:26px}
-.fld span{font-size:11px;color:var(--text-3);flex-shrink:0}
-input,select{
-  width:100%;min-width:0;min-height:26px;background:transparent;border:none;outline:none;
-  color:var(--text);font:600 16px 'DM Sans','Sarabun',sans-serif;
-  -webkit-appearance:none;appearance:none;border-radius:6px;
-}
-select{font-family:'Sarabun','DM Sans',sans-serif;cursor:pointer;text-overflow:ellipsis}
-select option{background:var(--surface);color:var(--text)}
-input:focus,select:focus{box-shadow:0 0 0 2px rgba(230,193,74,.55)}
+    --primary: #EED889;        /* Interaction yellow: main buttons, FAB, focus */
+    --primary-dark: #D9C06E;   /* pressed */
+    --primary-text: #EED889;
+    --secondary: #4D5769;      /* sub-buttons */
+    --secondary-dark: #5E6A7E;
+    --accent: #B58444;         /* Accent orange: pinned highlights */
+    --focus: #EED889;
 
-/* ── Program ── */
-.prog-ratio{font-size:12px;font-weight:600;color:var(--accent);margin-top:2px}
+    --text-primary: #FBFBFC;
+    --text-secondary: #CBD1DB; /* 4.6:1 on slate cards, 9:1 on dark */
 
-/* ── BMR / TDEE / Target ── */
-.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.stat{text-align:center;padding:6px 4px}
-.stat b{display:block;font-size:11px;color:var(--text-3);font-weight:600}
-.stat strong{display:block;font-size:19px;font-weight:700;line-height:1.2;margin-top:1px}
-.stat small{font-size:10.5px;color:var(--text-3)}
+    --danger: #EE8672;
 
-/* ── Macro summary ── */
-.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
-.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--rsm);padding:6px 3px;text-align:center;min-width:0}
-.sc-l{font-size:11px;font-weight:600;color:var(--text-2);white-space:nowrap}
-.sc-v{font-size:18px;font-weight:700;line-height:1.2;margin-top:1px}
-.sc-u{font-size:10px;color:var(--text-3);white-space:nowrap}
-.bar{height:4px;background:var(--border);border-radius:9px;margin:4px 4px 2px;overflow:hidden}
-.bar i{display:block;height:100%;border-radius:9px;transition:width .4s}
-.sc-p{font-size:10.5px;font-weight:600;color:var(--text-3)}
-.sc-p.over{color:var(--rose)}
+    --on-primary: #242A36;
+    --on-danger: #242A36;
+  }
 
-/* ── Food plan grid: fills remaining height ── */
-.plan{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:minmax(60px,1fr);gap:5px}
-.item{display:flex;align-items:center;gap:7px;background:#070B14;border:1px solid var(--border);border-radius:var(--rsm);padding:5px 8px;min-width:0}
-.item .e{font-size:22px;line-height:1;flex-shrink:0}
-.item .t{min-width:0;flex:1}
-.item .n{font-size:12.5px;font-weight:600;line-height:1.25}
-.item .q{font-size:16px;font-weight:700;color:var(--accent);line-height:1.2}
-.item .c{font-size:10.5px;color:var(--text-3);line-height:1.25}
-.item.water{background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.35)}
-.item.water .q{color:var(--blue)}
+  html, body { margin:0; padding:0; background: var(--bg-page); overflow:hidden; height:100%; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  h1, h2, h3, p { margin: 0; }
+  button { background: none; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer; }
+  body {
+    font-family: 'Sarabun', 'Noto Sans Thai', sans-serif;
+    color: var(--text-primary);
+    line-height: 1.4;
+    overflow-wrap: break-word; word-break: normal; line-break: auto;
+    -webkit-text-size-adjust: 100%;
+  }
+  .font-display { font-family: 'Chakra Petch', 'Sarabun', 'Noto Sans Thai', sans-serif; }
+  .font-data { font-family: 'Chakra Petch', 'Sarabun', sans-serif; }
 
-/* ── Toast for input warnings (no layout shift) ── */
-.toast{position:fixed;left:10px;right:10px;top:max(8px,env(safe-area-inset-top));max-width:500px;margin:0 auto;z-index:9;
-  background:#3a1518;border:1px solid var(--rose);color:#FECACA;border-radius:var(--rsm);padding:8px 12px;
-  font-size:13px;font-weight:600;display:none}
-.toast.on{display:block}
+  /* ---------- Layout utilities ---------- */
+  .flex { display: flex; }
+  .flex-1 { flex: 1 1 0%; }
+  .flex-col { flex-direction: column; }
+  .flex-wrap { flex-wrap: wrap; }
+  .items-center { align-items: center; }
+  .items-start { align-items: flex-start; }
+  .items-end { align-items: flex-end; }
+  .justify-between { justify-content: space-between; }
+  .justify-center { justify-content: center; }
+  .gap-1 { gap: 0.25rem; }
+  .gap-1-5 { gap: 0.375rem; }
+  .gap-2 { gap: 0.5rem; }
+  .gap-3 { gap: 0.75rem; }
+  .shrink-0 { flex-shrink: 0; }
+  .hidden { display: none !important; }
 
-/* ── Very narrow phones ── */
-@media(max-width:340px){.sc-v{font-size:16px}.stat strong{font-size:17px}.item .q{font-size:15px}.item .e{font-size:19px}}
+  .relative { position: relative; }
+  .absolute { position: absolute; }
+  .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+  .bottom-24 { bottom: 6rem; }
+  .left-half { left: 50%; }
+  .translate-x-neg-half { transform: translateX(-50%); }
+  .translate-y-full { transform: translateY(100%); }
+  .z-10 { z-index: 10; }
+  .z-20 { z-index: 20; }
+  .z-30 { z-index: 30; }
+  .z-40 { z-index: 40; }
+  .z-50 { z-index: 50; }
+
+  .mx-auto { margin-left: auto; margin-right: auto; }
+  .mt-0-5 { margin-top: 0.125rem; }
+  .mt-2 { margin-top: 0.5rem; }
+  .mt-3 { margin-top: 0.75rem; }
+  .mb-1 { margin-bottom: 0.25rem; }
+  .mb-2 { margin-bottom: 0.5rem; }
+  .mb-3 { margin-bottom: 0.75rem; }
+  .mb-4 { margin-bottom: 1rem; }
+  .mb-5 { margin-bottom: 1.25rem; }
+
+  .px-1 { padding-left: 0.25rem; padding-right: 0.25rem; }
+  .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+  .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+  .px-4 { padding-left: 1rem; padding-right: 1rem; }
+  .px-5 { padding-left: 1.25rem; padding-right: 1.25rem; }
+  .px-10 { padding-left: 2.5rem; padding-right: 2.5rem; }
+  .py-0-5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+  .py-2-5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+  .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+  .pt-5 { padding-top: 1.25rem; }
+  .pb-3 { padding-bottom: 0.75rem; }
+  .pb-7 { padding-bottom: 1.75rem; }
+  .pb-28 { padding-bottom: 7rem; }
+
+  .w-10 { width: 2.5rem; }
+  .w-14 { width: 3.5rem; }
+  .w-full { width: 100%; }
+  .h-1 { height: 0.25rem; }
+  .h-10 { height: 2.5rem; }
+  .h-11 { height: 2.75rem; }
+  .h-14 { height: 3.5rem; }
+  .h-full { height: 100%; }
+
+  .rounded-full { border-radius: 9999px; }
+  .rounded-xl { border-radius: 0.75rem; }
+  .rounded-2xl { border-radius: 1rem; }
+  .rounded-t-3xl { border-top-left-radius: 1.5rem; border-top-right-radius: 1.5rem; }
+
+  .border { border-width: 1px; border-style: solid; border-color: var(--border); }
+  .border-b { border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: var(--border); }
+  .border-t { border-top-width: 1px; border-top-style: solid; border-top-color: var(--border); }
+  .border-hair { border-color: var(--border); }
+
+  .overflow-hidden { overflow: hidden; }
+  .pointer-events-none { pointer-events: none; }
+  .resize-none { resize: none; }
+
+  /* ---------- Color utilities ----------
+     Class names kept stable from earlier revisions; each now
+     resolves to the current dark-theme token it plays the same
+     structural role for (e.g. bg-ink = app canvas background,
+     bg-panel* = card/input surfaces, bg-gold = primary filled
+     button, text-ink = text-on-filled-button). */
+  .bg-ink { background-color: var(--bg-page); }
+  .bg-panel { background-color: var(--surface); }
+  .bg-panel2 { background-color: var(--surface); }
+  .bg-panel3 { background-color: var(--surface-muted); }
+  .bg-gold { background-color: var(--primary); }
+  .bg-hair { background-color: var(--border); }
+  .bg-transparent { background-color: transparent; }
+  .bg-scrim { background-color: rgba(14,17,23,0.65); }
+
+  .text-txt { color: var(--text-primary); }
+  .text-muted { color: var(--text-secondary); }
+  .text-faint { color: var(--text-secondary); }
+  .text-gold { color: var(--primary-text); }
+  .text-ink { color: var(--on-primary); }
+  .placeholder-faint::placeholder { color: var(--text-secondary); opacity: 0.85; }
+
+  /* ---------- Typography utilities ---------- */
+  .text-5xl { font-size: 3rem; line-height: 1; }
+  .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+  .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+  .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+  .text-base { font-size: 1rem; line-height: 1.5rem; }
+  .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+  .font-medium { font-weight: 500; }
+  .font-semibold { font-weight: 600; }
+  .tracking-wide { letter-spacing: 0.025em; }
+  .leading-relaxed { line-height: 1.625; }
+  .text-left { text-align: left; }
+  .text-center { text-align: center; }
+  .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .min-w-0 { min-width: 0; }
+
+  .opacity-0 { opacity: 0; }
+  .opacity-70 { opacity: 0.7; }
+  .shadow-lg { box-shadow: 0 12px 28px -8px rgba(0,0,0,0.55), 0 4px 10px rgba(0,0,0,0.35); }
+
+  #stage-outer {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-page);
+  }
+  #app-frame {
+    position: relative;
+    display: flex; flex-direction: column;
+    width: 100%; height: 100%; max-width: 430px;
+    background: var(--bg-page);
+    overflow: hidden;
+  }
+  /* Desktop preview: show as a phone-sized card */
+  @media (min-width: 500px) and (min-height: 600px) {
+    #stage-outer { background: #181C25; }
+    #app-frame {
+      height: min(100%, 860px);
+      border-radius: 28px;
+      box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6), 0 0 0 1px var(--border);
+    }
+  }
+
+  /* ---------- Header ---------- */
+  .app-header {
+    background: var(--bg-page);
+    border-bottom: 1px solid rgba(251,251,252,0.08);
+    padding-top: calc(env(safe-area-inset-top, 0px) + 1rem);
+  }
+  .sheet-top { padding-top: calc(env(safe-area-inset-top, 0px) + 0.75rem); }
+  .fab-pos { right: 1.25rem; bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)); }
+  .list-wrap { min-height: 0; }
+
+  .z-45 { z-index: 45; }
+  .overflow-x-auto { overflow-x: auto; scrollbar-width: none; }
+  .swatch { width: 2rem; height: 2rem; border-radius: 9999px; border: 2px solid var(--surface-muted); }
+  .swatch[data-active="true"] { box-shadow: 0 0 0 2px var(--primary); }
+
+  /* ---------- Mobile type scale ---------- */
+  .t-h1 { font-size: 1.5rem; line-height: 1.2; }
+  .t-sub { font-size: 0.8125rem; }
+  .t-chip { font-size: 0.875rem; line-height: 1.2; }
+  .t-card-title { font-size: 1.0625rem; line-height: 1.35; }
+  .t-snippet { font-size: 0.9375rem; line-height: 1.45; }
+  .t-group { font-size: 1rem; }
+  .t-meta { font-size: 0.75rem; line-height: 1.2; }
+  .t-label { font-size: 0.8125rem; font-weight: 600; }
+  .t-body { font-size: 1rem; } /* 16px: prevents iOS zoom-on-focus */
+  .t-editor-title { font-size: 1.25rem; line-height: 1.3; }
+  .min-h-0 { min-height: 0; }
+  .h-9 { height: 2.25rem; }
+
+  ::-webkit-scrollbar { width: 0; height: 0; }
+  .scroll-y { overflow-y: auto; overscroll-behavior: contain; }
+
+  .tab-dot { width: 6px; border-radius: 4px; }
+  .group-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  mark {
+    background: rgba(238,216,137,0.35);
+    color: var(--text-primary);
+    padding: 0 1px;
+    border-radius: 2px;
+  }
+
+  .chip {
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+  .chip[data-active="true"] {
+    box-shadow: inset 0 0 0 1.5px var(--chip-color, var(--primary));
+    background: color-mix(in srgb, var(--chip-color, var(--primary)) 30%, var(--surface));
+  }
+
+  .card-enter { animation: cardIn 0.28s cubic-bezier(0.2,0.7,0.3,1) both; }
+  @keyframes cardIn {
+    from { opacity:0; transform: translateY(6px); }
+    to { opacity:1; transform: translateY(0); }
+  }
+
+  #editor-sheet, #confirm-sheet {
+    transition: transform 0.32s cubic-bezier(0.16,1,0.3,1), opacity 0.25s ease;
+  }
+
+  .btn-press:active { transform: scale(0.96); }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+    border-radius: 9999px;
+    padding: 12px 20px;
+    font-size: 15px; font-family: 'Sarabun', sans-serif; font-weight: 600; line-height: 1.2;
+    white-space: nowrap; cursor: pointer;
+  }
+  .btn-sm { padding: 9px 14px; }
+  .btn-primary { background: var(--primary); color: var(--on-primary); border: 1px solid var(--primary); }
+  .btn-primary:active { background: var(--primary-dark); border-color: var(--primary-dark); }
+  .btn-secondary { background: var(--secondary); color: var(--text-primary); border: 1px solid var(--border); }
+  .btn-secondary:active { background: var(--secondary-dark); }
+  .btn-danger { background: var(--danger); color: var(--on-danger); border: 1px solid var(--danger); }
+  .btn-danger:active { filter: brightness(0.92); }
+  .pin-on { background: var(--accent); }
+
+  .fab-glow {
+    box-shadow: 0 10px 24px -6px rgba(238,216,137,0.35), 0 2px 8px rgba(0,0,0,0.4);
+  }
+  #btn-add-note:active { filter: brightness(0.92); }
+
+  textarea, input { font-family: 'Sarabun', sans-serif; }
+  textarea:focus, input:focus { outline: none; }
+  .field { background: var(--field); border: 1px solid transparent; }
+  .field:focus { border-color: var(--primary); }
+  .field:focus-visible { outline: none; }
+  .note-card { box-shadow: 0 1px 2px rgba(32,32,32,0.08); }
+
+  .focus-ring:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .snippet-line {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
+  }
 </style>
 </head>
 <body>
-<div class="toast" id="toast" role="alert"></div>
 
-<main class="app">
-  <!-- 🧍 Personal info -->
-  <section class="card sg">
-    <div class="sf"><label for="gender">⚧️ เพศ</label>
-      <div class="fld"><select id="gender"><option value="male" selected>ชาย ♂</option><option value="female">หญิง ♀</option></select></div></div>
-    <div class="sf"><label for="age">🎂 อายุ</label>
-      <div class="fld"><input class="num" type="number" id="age" value="50" inputmode="numeric" min="15" max="100" step="1"><span>ปี</span></div></div>
-    <div class="sf"><label for="height">📏 ส่วนสูง</label>
-      <div class="fld"><input class="num" type="number" id="height" value="170" inputmode="decimal" min="120" max="230" step="any"><span>ซม.</span></div></div>
-    <div class="sf"><label for="weight">⚖️ น้ำหนัก</label>
-      <div class="fld"><input class="num" type="number" id="weight" value="96" inputmode="decimal" min="30" max="250" step="any"><span>กก.</span></div></div>
-    <div class="sf sf-full"><label for="activity">🏃 ระดับกิจกรรม</label>
-      <div class="fld"><select id="activity">
-        <option value="1.2">🛋️ นั่งทำงาน · แทบไม่ออกกำลังกาย</option>
-        <option value="1.375">🚶 เบา · 1-3 วัน/สัปดาห์</option>
-        <option value="1.55" selected>🏃 ปานกลาง · 3-5 วัน/สัปดาห์</option>
-        <option value="1.725">🏋️ หนัก · 6-7 วัน/สัปดาห์</option>
-        <option value="1.9">🔥 หนักมาก · นักกีฬา/ใช้แรงงาน</option>
-      </select></div></div>
-  </section>
+<div id="stage-outer">
+  <div id="app-frame">
 
-  <!-- 🎯 Program -->
-  <section class="card">
-    <select id="program" aria-label="โปรแกรมการทาน">
-      <option value="reset">🔄 ปรับระบบเผาผลาญ (Metabolic Reset)</option>
-      <option value="cut1" selected>🔥 ลีนไขมัน รอบที่ 1 (First Cut)</option>
-      <option value="cut2">⚡ ลีนไขมัน รอบที่ 2 (Deep Cut)</option>
-    </select>
-    <div class="prog-ratio num" id="ratio"></div>
-  </section>
+    <!-- HEADER -->
+    <header class="app-header shrink-0 px-4 pb-3 relative z-20">
+      <div id="header-normal" class="flex items-center justify-between">
+        <div class="min-w-0">
+          <h1 class="font-display t-h1 font-semibold text-txt tracking-wide">📝 สมุดโน้ต</h1>
+          <p id="note-count-label" class="font-data t-sub text-faint mt-0-5">🗂️ 0 โน้ต</p>
+        </div>
+        <div class="flex items-center gap-1 shrink-0">
+          <button type="button" id="btn-export" aria-label="ส่งออกเป็น Excel" title="📤 ส่งออก Excel" class="btn-press focus-ring w-10 h-10 rounded-full bg-panel2 border border-hair flex items-center justify-center text-base">
+            📤
+          </button>
+          <button type="button" id="btn-import" aria-label="นำเข้าจาก Excel" title="📥 นำเข้า Excel" class="btn-press focus-ring w-10 h-10 rounded-full bg-panel2 border border-hair flex items-center justify-center text-base">
+            📥
+          </button>
+          <button type="button" id="btn-open-search" aria-label="ค้นหาโน้ต" class="btn-press focus-ring w-10 h-10 rounded-full bg-panel2 border border-hair flex items-center justify-center text-base">
+            🔍
+          </button>
+        </div>
+        <input type="file" id="import-file-input" accept=".xlsx,.xls,.csv" class="hidden">
+      </div>
 
-  <!-- 📊 Energy -->
-  <section class="trio">
-    <div class="card stat"><b>🔥 BMR</b><strong class="num" id="bmr">—</strong><small>kcal/วัน</small></div>
-    <div class="card stat"><b>⚡ TDEE</b><strong class="num" id="tdee">—</strong><small>kcal/วัน</small></div>
-    <div class="card stat"><b>🎯 เป้า 80%</b><strong class="num" id="target" style="color:var(--accent)">—</strong><small>kcal/วัน</small></div>
-  </section>
+      <div id="header-search" class="hidden items-center gap-1">
+        <div class="flex-1 flex items-center gap-2 bg-panel2 border border-hair rounded-xl px-3 h-11 min-w-0">
+          <span class="text-lg opacity-70">🔍</span>
+          <input id="search-input" type="text" placeholder="ค้นหาชื่อเรื่องหรือเนื้อหา..." class="focus-ring bg-transparent flex-1 min-w-0 text-base text-txt placeholder-faint h-full" autocomplete="off">
+          <button type="button" id="btn-clear-search" aria-label="ล้างคำค้นหา" class="hidden text-faint text-sm px-1 shrink-0">✕</button>
+        </div>
+        <button type="button" id="btn-close-search" class="btn-press focus-ring t-chip text-gold font-medium px-2 h-11 shrink-0">✖️ ยกเลิก</button>
+      </div>
 
-  <!-- 🥗 Macro summary (actual vs target) -->
-  <section class="summary" id="summary"></section>
+      <!-- Tag filter row -->
+      <div id="tag-filter-row" class="mt-2 flex gap-1-5 overflow-x-auto"></div>
+    </header>
 
-  <!-- 🍽️ Food plan + 💧 water -->
-  <section class="plan" id="plan"></section>
-</main>
+    <!-- LIST + EMPTY STATE -->
+    <div class="list-wrap relative flex-1">
+      <main id="list-container" class="absolute inset-0 scroll-y px-4 pt-3 pb-28"></main>
+      <div id="empty-state" class="hidden absolute inset-0 flex flex-col items-center justify-center text-center px-10 z-10 bg-ink">
+        <div class="text-5xl mb-3" id="empty-icon">📝</div>
+        <p id="empty-title" class="font-display text-xl text-txt mb-1">✨ ยังไม่มีโน้ต</p>
+        <p id="empty-sub" class="t-snippet text-muted leading-relaxed" style="text-wrap:balance">แตะปุ่ม ➕ ด้านล่างเพื่อเริ่มจดโน้ตแรกของคุณ</p>
+      </div>
+    </div>
+
+    <!-- FAB -->
+    <button type="button" id="btn-add-note" aria-label="เพิ่มโน้ตใหม่" class="btn-press fab-glow absolute fab-pos w-14 h-14 rounded-full bg-gold text-ink text-2xl flex items-center justify-center z-30">
+      ➕
+    </button>
+
+    <!-- EDITOR SHEET -->
+    <div id="editor-sheet" class="absolute inset-0 translate-y-full bg-ink z-40 flex flex-col" inert>
+      <div class="sheet-top shrink-0 flex items-center justify-between px-4 pb-3 border-b border-hair">
+        <button type="button" id="btn-editor-cancel" class="btn btn-secondary btn-sm btn-press focus-ring shrink-0">✖️ ยกเลิก</button>
+        <div class="flex items-center gap-1 shrink-0">
+          <button type="button" id="btn-editor-pin" aria-label="ปักหมุด" aria-pressed="false" class="btn-press focus-ring w-10 h-10 rounded-full flex items-center justify-center text-lg">📌</button>
+          <button type="button" id="btn-editor-delete" aria-label="ลบโน้ต" class="hidden btn-press focus-ring w-10 h-10 rounded-full flex items-center justify-center text-lg">🗑️</button>
+        </div>
+        <button type="button" id="btn-editor-save" class="btn btn-primary btn-sm btn-press focus-ring shrink-0">💾 บันทึก</button>
+      </div>
+
+      <div class="flex-1 min-h-0 flex flex-col px-4 pt-3 pb-4">
+        <input id="editor-title" type="text" maxlength="120" placeholder="✏️ หัวข้อโน้ต..." class="focus-ring field shrink-0 w-full rounded-xl px-4 py-2-5 font-display t-editor-title font-semibold text-txt placeholder-faint mb-3">
+
+        <p class="t-label text-muted mb-2 shrink-0">🏷️ หมวดหมู่</p>
+        <div id="tag-picker" class="shrink-0 flex flex-wrap gap-1-5 mb-3"></div>
+
+        <textarea id="editor-content" placeholder="📝 เริ่มพิมพ์โน้ตของคุณที่นี่..." maxlength="8000" rows="4" class="focus-ring field flex-1 min-h-0 w-full rounded-xl px-4 py-3 t-body text-txt placeholder-faint leading-relaxed resize-none"></textarea>
+
+        <div class="shrink-0 flex justify-between t-meta text-faint mt-2">
+          <span id="editor-meta-time" class="font-data"></span>
+          <span id="editor-char-count" class="font-data">🔤 0 / 8000</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CATEGORY MANAGER SHEET -->
+    <div id="cat-sheet" class="absolute inset-0 translate-y-full bg-ink z-45 flex flex-col" inert>
+      <div class="sheet-top shrink-0 flex items-center gap-3 px-4 pb-3 border-b border-hair">
+        <button type="button" id="btn-cat-close" class="btn btn-secondary btn-sm btn-press focus-ring shrink-0">✖️ ปิด</button>
+        <h2 class="font-display t-group font-semibold text-txt">🏷️ จัดการหมวดหมู่</h2>
+      </div>
+      <div class="flex-1 min-h-0 flex flex-col px-4 pt-3 pb-4">
+        <div class="shrink-0 bg-panel3 rounded-2xl px-3 py-3 mb-3">
+          <p id="cat-form-title" class="t-label text-muted mb-2">➕ เพิ่มหมวดหมู่ใหม่</p>
+          <div class="flex gap-2 mb-2">
+            <input id="cat-emoji" type="text" maxlength="8" aria-label="อีโมจิ" class="focus-ring field text-center w-14 h-11 rounded-xl t-body shrink-0">
+            <input id="cat-name" type="text" maxlength="20" placeholder="ชื่อหมวดหมู่..." class="focus-ring field flex-1 min-w-0 h-11 rounded-xl px-3 t-body text-txt placeholder-faint">
+          </div>
+          <div id="cat-colors" class="flex gap-2 mb-3 flex-wrap"></div>
+          <div class="flex gap-2">
+            <button type="button" id="btn-cat-save" class="btn btn-primary btn-sm btn-press focus-ring flex-1">➕ เพิ่ม</button>
+            <button type="button" id="btn-cat-cancel-edit" class="hidden btn btn-secondary btn-sm btn-press focus-ring">↩️ ยกเลิกแก้ไข</button>
+          </div>
+        </div>
+        <p id="cat-count" class="shrink-0 t-label text-muted mb-2"></p>
+        <div id="cat-list" class="flex-1 min-h-0 scroll-y"></div>
+      </div>
+    </div>
+
+    <!-- CONFIRM DELETE SHEET -->
+    <div id="confirm-sheet" class="absolute inset-0 opacity-0 pointer-events-none flex items-end z-50" inert>
+      <div id="confirm-backdrop" class="absolute inset-0 bg-scrim"></div>
+      <div class="relative w-full bg-panel2 rounded-t-3xl px-5 pt-5 pb-7 border-t border-hair">
+        <div class="w-10 h-1 rounded-full bg-hair mx-auto mb-4"></div>
+        <p id="confirm-title" class="font-display text-lg text-txt font-semibold mb-1">🗑️ ลบโน้ตนี้ใช่ไหม?</p>
+        <p id="confirm-sub" class="t-snippet text-muted mb-5">⚠️ การลบไม่สามารถย้อนกลับได้</p>
+        <div class="flex gap-3">
+          <button type="button" id="btn-confirm-cancel" class="btn btn-secondary btn-press focus-ring flex-1">✖️ ยกเลิก</button>
+          <button type="button" id="btn-confirm-delete" class="btn btn-danger btn-press focus-ring flex-1">🗑️ ลบโน้ต</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" class="hidden absolute left-half translate-x-neg-half bottom-24 z-50 bg-panel border border-hair text-txt t-chip px-4 py-2-5 rounded-full shadow-lg"></div>
+
+  </div>
+</div>
 
 <script>
-/* ═══ DATA ═══ */
-// Fixed foods (ปริมาณคงที่) — carb/fat/protein in grams, cal in kcal
-const FIXED = [
-  {name:'ไข่ไก่',     emoji:'🥚', qty:'2 ฟอง',   carb:1.2, fat:10,   protein:14,  cal:140},
-  {name:'โยเกิร์ต',   emoji:'🍦', qty:'1 ถ้วย',  carb:8,   fat:4,    protein:6,   cal:100},
-  {name:'ถั่วลิสง',   emoji:'🥜', qty:'30 กรัม', carb:4.8, fat:14.5, protein:7.5, cal:170},
-  {name:'ผักใบเขียว', emoji:'🥬', qty:'400 กรัม',carb:12,  fat:0.8,  protein:8,   cal:80},
-];
-// Per 100 g (rice, pork) / per 15 ml (oil)
-const RICE = {carb:28, fat:0.3, protein:2.7, cal:130};
-const PORK = {carb:0,  fat:3.5, protein:26,  cal:143};
-const OIL  = {fat:14, cal:130};
-const SPOON_RICE_G = 80; // 1 ทัพพี ≈ 80 g
-const PROGRAMS = {
-  reset:{protein:32, carb:43, fat:25},
-  cut1: {protein:40, carb:35, fat:25},
-  cut2: {protein:48, carb:22, fat:30},
-};
-const MACRO_COLOR = {cal:'#E6C14A', carb:'#D9B26A', protein:'#4ADE80', fat:'#F87171'};
-// Input limits: [min, max, default, label, unit]
-const LIMITS = {age:[15,100,50,'อายุ','ปี'], height:[120,230,170,'ส่วนสูง','ซม.'], weight:[30,250,96,'น้ำหนัก','กก.']};
+(function () {
+  'use strict';
 
-/* ═══ HELPERS ═══ */
-const $ = id => document.getElementById(id);
-const fmt = (n, d = 0) => (isFinite(n) ? n : 0).toLocaleString('en-US', {minimumFractionDigits:d, maximumFractionDigits:d});
+  const STORAGE_KEY = 'myseo_notes_v1';
 
-// Read + validate numeric input: empty / NaN → default, out of range → clamped
-function readInput(id) {
-  const [min, max, def, label, unit] = LIMITS[id];
-  const raw = $(id).value.trim();
-  let n = parseFloat(raw), msg = '';
-  if (raw === '' || !isFinite(n)) { n = def; msg = `${label}ว่างหรือไม่ถูกต้อง · ใช้ ${def} ${unit}`; }
-  else if (n < min || n > max) { n = Math.min(max, Math.max(min, n)); msg = `${label}ต้องอยู่ระหว่าง ${min}–${max} ${unit} · ใช้ ${n}`; }
-  return {n, msg};
-}
+  const CAT_KEY = 'myseo_categories_v1';
+  const MAX_CATEGORIES = 10;
+  const DEFAULT_EMOJI = '🏷️';
 
-/* ═══ CALCULATION ═══ */
-// Mifflin-St Jeor
-const bmrOf = (w, h, a, male) => 10*w + 6.25*h - 5*a + (male ? 5 : -161);
+  // Preset hues tuned for the dark theme; pill text is derived by lightening the hue
+  const OLD_PALETTE = ['#5b7c99', '#6a8f6d', '#b88a4a', '#b4553f', '#8a7599', '#4f8a8b', '#b5697a', '#8c6a4f']; // earlier themes -> migrated by index
+  const PALETTE = ['#7FA6C9', '#7DB383', '#D9A55B', '#E0775F', '#A892C7', '#5FB0B1', '#D98095', '#C9A27E']
+    .map(function (c) { return { color: c, textColor: lighten(c, 0.5) }; });
 
-function getTargets(w, h, a, male, act, prog) {
-  const bmr = bmrOf(w, h, a, male), tdee = bmr * act, cal = tdee * 0.8; // กิน 80% ของ TDEE
-  return {bmr, tdee, cal,
-    carb: cal*prog.carb/100/4, protein: cal*prog.protein/100/4, fat: cal*prog.fat/100/9};
-}
+  function lighten(hex, t) {
+    let n = parseInt(hex.slice(1), 16);
+    let ch = [n >> 16, (n >> 8) & 255, n & 255].map(function (v) {
+      return Math.round(v + (255 - v) * t).toString(16).padStart(2, '0');
+    });
+    return '#' + ch.join('');
+  }
 
-/* Solve order: fixed foods → rice (carb) → pork (protein left after fixed+rice) → oil (fat left).
-   Negative remainders clamp to 0 so quantities never go below zero. */
-function solve(t) {
-  const f = FIXED.reduce((s, x) => ({carb:s.carb+x.carb, fat:s.fat+x.fat, protein:s.protein+x.protein, cal:s.cal+x.cal}),
-                         {carb:0, fat:0, protein:0, cal:0});
-  const riceG = Math.max(0, t.carb - f.carb) / RICE.carb * 100;
-  const riceP = riceG/100*RICE.protein, riceF = riceG/100*RICE.fat;
-  const porkG = Math.max(0, t.protein - f.protein - riceP) / PORK.protein * 100;
-  const porkF = porkG/100*PORK.fat;
-  const oilMl = Math.max(0, t.fat - f.fat - riceF - porkF) / OIL.fat * 15;
-  const riceCal = riceG/100*RICE.cal, porkCal = porkG/100*PORK.cal, oilCal = oilMl/15*OIL.cal;
-  return {riceG, porkG, oilMl, riceCal, porkCal, oilCal, actual:{
-    cal:f.cal + riceCal + porkCal + oilCal,
-    carb:f.carb + riceG/100*RICE.carb,
-    protein:f.protein + riceP + porkG/100*PORK.protein,
-    fat:f.fat + riceF + porkF + oilMl/15*OIL.fat }};
-}
+  function normalizeCatColor(c) {
+    let v = String(c || '').toLowerCase();
+    let i = OLD_PALETTE.indexOf(v);
+    if (i !== -1) return PALETTE[i].color;
+    return /^#[0-9a-f]{6}$/.test(v) ? v : PALETTE[0].color;
+  }
 
-/* ═══ RENDER ═══ */
-function renderSummary(t, p) {
-  const rows = [
-    ['🔥 แคลอรี่', p.actual.cal,     t.cal,     'kcal', MACRO_COLOR.cal],
-    ['🍚 คาร์บ',   p.actual.carb,    t.carb,    'g',    MACRO_COLOR.carb],
-    ['🥩 โปรตีน',  p.actual.protein, t.protein, 'g',    MACRO_COLOR.protein],
-    ['🥑 ไขมัน',   p.actual.fat,     t.fat,     'g',    MACRO_COLOR.fat],
-  ];
-  $('summary').innerHTML = rows.map(([l, v, tg, u, c]) => {
-    const pct = tg > 0 ? Math.round(v/tg*100) : 0;
-    return `<div class="sc"><div class="sc-l">${l}</div>
-      <div class="sc-v num" style="color:${c}">${fmt(v)}</div>
-      <div class="sc-u num">${u} / ${fmt(tg)}</div>
-      <div class="bar"><i style="width:${Math.min(pct,100)}%;background:${c}"></i></div>
-      <div class="sc-p num ${pct > 105 ? 'over' : ''}">${pct}%</div></div>`;
-  }).join('');
-}
+  const DEFAULT_CATEGORIES = [
+    { id: 'schedule', emoji: '🗓️', label: 'ตารางงาน' },
+    { id: 'content', emoji: '🎥', label: 'หัวข้อ Content' },
+    { id: 'quote', emoji: '💬', label: 'คำคม' },
+    { id: 'gem', emoji: '💎', label: 'GEM' },
+    { id: 'personal', emoji: '🌿', label: 'ส่วนตัว' },
+  ].map(function (c, i) {
+    return { id: c.id, emoji: c.emoji, label: c.label, color: PALETTE[i].color, textColor: PALETTE[i].textColor };
+  });
 
-function renderPlan(p, w) {
-  const cell = (e, n, q, c, cls = '') =>
-    `<div class="item ${cls}"><div class="e">${e}</div><div class="t"><div class="n">${n}</div><div class="q num">${q}</div><div class="c num">${c}</div></div></div>`;
-  const zero = (v, min) => v < min;
-  const waterMl = Math.round(w * 35);
-  $('plan').innerHTML =
-    cell('🍚','ข้าวสวยสุก', zero(p.riceG,1) ? '✓ พอแล้ว' : fmt(p.riceG)+' g', `≈${fmt(p.riceG/SPOON_RICE_G,1)} ทัพพี · ${fmt(p.riceCal)} kcal`) +
-    cell('🥩','สันในหมู',  zero(p.porkG,1) ? '✓ พอแล้ว' : fmt(p.porkG)+' g', `${fmt(p.porkCal)} kcal`) +
-    FIXED.map(f => cell(f.emoji, f.name, f.qty, `คงที่ · ${f.cal} kcal`)).join('') +
-    cell('🫒','น้ำมัน', zero(p.oilMl,0.5) ? '✓ พอแล้ว' : fmt(p.oilMl,1)+' ml', `≈${fmt(p.oilMl/15,1)} ช้อนโต๊ะ · ${fmt(p.oilCal)} kcal`) +
-    cell('💧','น้ำดื่ม', fmt(waterMl/1000,1)+' ลิตร', `≈${Math.round(waterMl/250)} แก้ว · 35 มล./กก.`, 'water');
-}
+  let categories = []; // user-editable categories (persisted)
 
-function update(showWarn) {
-  const inputs = ['age','height','weight'].map(readInput);
-  const [a, h, w] = inputs.map(i => i.n);
-  const male = $('gender').value === 'male';
-  const act = parseFloat($('activity').value) || 1.55;
-  const prog = PROGRAMS[$('program').value] || PROGRAMS.cut1;
-  const t = getTargets(w, h, a, male, act, prog), p = solve(t);
+  const state = {
+    notes: [],
+    searchQuery: '',
+    activeTagFilter: null,
+    editingId: null,
+    editorTags: [],
+    editorPinned: false,
+    editorSnapshot: null,
+    pendingDeleteId: null,
+    confirmMode: 'delete',
+    editingCatId: null,
+    catColorIdx: 0,
+    pendingDeleteCatId: null,
+  };
 
-  $('ratio').textContent = `🥩 P ${prog.protein}% · 🍚 C ${prog.carb}% · 🥑 F ${prog.fat}%`;
-  $('bmr').textContent = fmt(t.bmr);
-  $('tdee').textContent = fmt(t.tdee);
-  $('target').textContent = fmt(t.cal);
-  renderSummary(t, p);
-  renderPlan(p, w);
+  const els = {};
 
-  // Warnings shown only after the field is committed (not mid-typing)
-  const msg = inputs.map(i => i.msg).filter(Boolean).join(' · ');
-  const toast = $('toast');
-  toast.textContent = '⚠️ ' + msg;
-  toast.classList.toggle('on', !!(showWarn && msg));
-}
+  function q(id) { return document.getElementById(id); }
 
-['age','height','weight'].forEach(id => {
-  $(id).addEventListener('input', () => update(false));
-  $(id).addEventListener('change', () => update(true));
-});
-['gender','activity','program'].forEach(id => $(id).addEventListener('change', () => update(true)));
-update(false);
+  function cacheEls() {
+    els.headerNormal = q('header-normal');
+    els.headerSearch = q('header-search');
+    els.searchInput = q('search-input');
+    els.btnOpenSearch = q('btn-open-search');
+    els.btnExport = q('btn-export');
+    els.btnImport = q('btn-import');
+    els.importFileInput = q('import-file-input');
+    els.btnCloseSearch = q('btn-close-search');
+    els.btnClearSearch = q('btn-clear-search');
+    els.tagFilterRow = q('tag-filter-row');
+    els.listContainer = q('list-container');
+    els.emptyState = q('empty-state');
+    els.noteCountLabel = q('note-count-label');
+    els.btnAddNote = q('btn-add-note');
+    els.editorSheet = q('editor-sheet');
+    els.editorTitle = q('editor-title');
+    els.editorContent = q('editor-content');
+    els.editorCharCount = q('editor-char-count');
+    els.editorMetaTime = q('editor-meta-time');
+    els.tagPicker = q('tag-picker');
+    els.btnEditorCancel = q('btn-editor-cancel');
+    els.btnEditorSave = q('btn-editor-save');
+    els.btnEditorPin = q('btn-editor-pin');
+    els.btnEditorDelete = q('btn-editor-delete');
+    els.confirmSheet = q('confirm-sheet');
+    els.confirmBackdrop = q('confirm-backdrop');
+    els.btnConfirmCancel = q('btn-confirm-cancel');
+    els.btnConfirmDelete = q('btn-confirm-delete');
+    els.confirmTitle = q('confirm-title');
+    els.confirmSub = q('confirm-sub');
+    els.toast = q('toast');
+    els.catSheet = q('cat-sheet');
+    els.catEmoji = q('cat-emoji');
+    els.catName = q('cat-name');
+    els.catColors = q('cat-colors');
+    els.catList = q('cat-list');
+    els.catCount = q('cat-count');
+    els.catFormTitle = q('cat-form-title');
+    els.btnCatSave = q('btn-cat-save');
+    els.btnCatCancelEdit = q('btn-cat-cancel-edit');
+    els.btnCatClose = q('btn-cat-close');
+  }
+
+  // ---------- Storage ----------
+  function loadNotes() {
+    try {
+      let raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      let parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .filter(function (n) { return n && typeof n.id === 'string'; })
+        .map(sanitizeNote);
+    } catch (err) {
+      return [];
+    }
+  }
+
+  // Normalizes a note loaded from storage so every field has the expected
+  // type/shape, even if it came from an older schema, a manually edited
+  // localStorage value, or a corrupted write. Prevents crashes further
+  // down the pipeline (e.g. calling .indexOf on a missing tags array).
+  function sanitizeNote(n) {
+    let now = Date.now();
+    return {
+      id: n.id,
+      title: typeof n.title === 'string' ? n.title : '',
+      content: typeof n.content === 'string' ? n.content : '',
+      tags: Array.isArray(n.tags) ? n.tags.filter(function (t) { return typeof t === 'string'; }) : [],
+      pinned: !!n.pinned,
+      createdAt: Number.isFinite(n.createdAt) ? n.createdAt : now,
+      updatedAt: Number.isFinite(n.updatedAt) ? n.updatedAt : now,
+    };
+  }
+
+  function saveNotes() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.notes));
+      return true;
+    } catch (err) {
+      showToast('⚠️ บันทึกไม่สำเร็จ พื้นที่จัดเก็บอาจเต็ม');
+      return false;
+    }
+  }
+
+  // ---------- Categories: storage ----------
+  function loadCategories() {
+    let defaults = DEFAULT_CATEGORIES.map(function (c) { return Object.assign({}, c); });
+    try {
+      let raw = localStorage.getItem(CAT_KEY);
+      if (raw === null) return defaults;      // first run only; [] is a valid saved state
+      let parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return defaults;
+      return parsed
+        .filter(function (c) { return c && typeof c.id === 'string' && typeof c.label === 'string' && c.label.trim(); })
+        .map(function (c) {
+          return {
+            id: c.id,
+            emoji: typeof c.emoji === 'string' && c.emoji ? c.emoji : DEFAULT_EMOJI,
+            label: c.label.trim().slice(0, 20),
+            color: normalizeCatColor(c.color),
+            textColor: lighten(normalizeCatColor(c.color), 0.5),
+          };
+        });
+    } catch (err) {
+      return defaults;
+    }
+  }
+
+  function saveCategories() {
+    try {
+      localStorage.setItem(CAT_KEY, JSON.stringify(categories));
+      return true;
+    } catch (err) {
+      showToast('⚠️ บันทึกหมวดหมู่ไม่สำเร็จ พื้นที่จัดเก็บอาจเต็ม');
+      return false;
+    }
+  }
+
+  function makeCatId() {
+    return 'cat_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+  }
+
+  function firstGrapheme(str) {
+    str = (str || '').trim();
+    if (!str) return '';
+    if (window.Intl && Intl.Segmenter) {
+      let first = new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(str)[Symbol.iterator]().next();
+      return first.done ? '' : first.value.segment;
+    }
+    return Array.from(str)[0];
+  }
+
+  // Finds a category by label or id; creates one when an imported file names an unknown label.
+  function resolveCategoryId(label) {
+    let match = categories.filter(function (t) { return t.label === label || t.id === label; })[0];
+    if (match) return match.id;
+    let p = PALETTE[categories.length % PALETTE.length];
+    let created = { id: makeCatId(), emoji: DEFAULT_EMOJI, label: label.slice(0, 20), color: p.color, textColor: p.textColor };
+    categories.push(created);
+    return created.id;
+  }
+
+  function makeId() {
+    return 'note_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  }
+
+  // ---------- Excel import / export ----------
+  function fileTimestamp() {
+    let d = new Date();
+    function pad(x) { return String(x).padStart(2, '0'); }
+    return d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '_' + pad(d.getHours()) + pad(d.getMinutes());
+  }
+
+  function parseDateCell(val) {
+    if (!val) return Date.now();
+    let t = Date.parse(val);
+    return Number.isFinite(t) ? t : Date.now();
+  }
+
+  function exportNotesToExcel() {
+    if (typeof XLSX === 'undefined') {
+      showToast('⚠️ ต้องเชื่อมต่ออินเทอร์เน็ตเพื่อส่งออกไฟล์ Excel');
+      return;
+    }
+    if (state.notes.length === 0) {
+      showToast('📭 ยังไม่มีโน้ตให้ส่งออก');
+      return;
+    }
+    try {
+      let rows = state.notes.map(function (n) {
+        let tagLabels = n.tags.map(function (tagId) {
+          let meta = getTagMeta(tagId);
+          return meta ? meta.label : tagId;
+        }).join(', ');
+        return {
+          'ID': n.id,
+          'หัวข้อ': n.title,
+          'เนื้อหา': n.content,
+          'หมวดหมู่': tagLabels,
+          'ปักหมุด': n.pinned ? 'ใช่' : '',
+          'สร้างเมื่อ': new Date(n.createdAt).toISOString(),
+          'แก้ไขล่าสุด': new Date(n.updatedAt).toISOString(),
+        };
+      });
+      let ws = XLSX.utils.json_to_sheet(rows, {
+        header: ['ID', 'หัวข้อ', 'เนื้อหา', 'หมวดหมู่', 'ปักหมุด', 'สร้างเมื่อ', 'แก้ไขล่าสุด'],
+      });
+      ws['!cols'] = [{ wch: 22 }, { wch: 26 }, { wch: 40 }, { wch: 20 }, { wch: 8 }, { wch: 22 }, { wch: 22 }];
+      let wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'โน้ต');
+      XLSX.writeFile(wb, 'สมุดโน้ต_' + fileTimestamp() + '.xlsx');
+      showToast('📤 ส่งออกไฟล์ Excel แล้ว (' + state.notes.length + ' รายการ)');
+    } catch (err) {
+      showToast('⚠️ ส่งออกไม่สำเร็จ กรุณาลองใหม่');
+    }
+  }
+
+  function importNotesFromExcel(file) {
+    if (typeof XLSX === 'undefined') {
+      showToast('⚠️ ต้องเชื่อมต่ออินเทอร์เน็ตเพื่อนำเข้าไฟล์ Excel');
+      return;
+    }
+    let reader = new FileReader();
+    reader.onerror = function () {
+      showToast('⚠️ อ่านไฟล์ไม่สำเร็จ');
+    };
+    reader.onload = function (e) {
+      try {
+        let data = new Uint8Array(e.target.result);
+        let wb = XLSX.read(data, { type: 'array' });
+        let sheetName = wb.SheetNames[0];
+        if (!sheetName) {
+          showToast('⚠️ ไม่พบข้อมูลในไฟล์');
+          return;
+        }
+        let rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: '' });
+        if (!rows.length) {
+          showToast('📭 ไม่พบรายการโน้ตในไฟล์นี้');
+          return;
+        }
+
+        let added = 0, updated = 0, skipped = 0;
+        let seenIdsThisImport = {};
+
+        rows.forEach(function (row) {
+          let title = String(row['หัวข้อ'] || row['Title'] || '').trim();
+          let content = String(row['เนื้อหา'] || row['Content'] || '').trim();
+          if (!title && !content) { skipped++; return; }
+
+          let tagsRaw = String(row['หมวดหมู่'] || row['Tags'] || '').trim();
+          let tags = tagsRaw
+            ? tagsRaw.split(',').map(function (s) { return s.trim(); }).filter(Boolean).map(resolveCategoryId)
+            : [];
+
+          let pinnedRaw = String(row['ปักหมุด'] || '').trim().toLowerCase();
+          let pinned = pinnedRaw === 'ใช่' || pinnedRaw === 'yes' || pinnedRaw === 'true' || pinnedRaw === '1';
+
+          let createdAt = parseDateCell(row['สร้างเมื่อ']);
+          let updatedAt = parseDateCell(row['แก้ไขล่าสุด']);
+
+          // Reuse the file's id unless it repeats earlier in this same file.
+          // Known id -> update that note; unknown id -> keep it; no id -> mint one.
+          let idRaw = String(row['ID'] || '').trim();
+          let reusable = idRaw && !seenIdsThisImport[idRaw];
+          let existingIdx = reusable ? state.notes.findIndex(function (n) { return n.id === idRaw; }) : -1;
+          let finalId = reusable ? idRaw : makeId();
+          if (idRaw) seenIdsThisImport[idRaw] = true;
+
+          let note = sanitizeNote({
+            id: finalId,
+            title: title,
+            content: content,
+            tags: tags,
+            pinned: pinned,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+          });
+
+          if (existingIdx !== -1) {
+            state.notes[existingIdx] = note;
+            updated++;
+          } else {
+            state.notes.push(note);
+            added++;
+          }
+        });
+
+        saveNotes();
+        saveCategories();
+        renderTagFilterRow();
+        renderList();
+
+        let parts = [];
+        if (added) parts.push('เพิ่มใหม่ ' + added);
+        if (updated) parts.push('อัปเดต ' + updated);
+        if (skipped) parts.push('ข้าม ' + skipped + ' แถวว่าง');
+        showToast('📥 นำเข้าสำเร็จ: ' + (parts.length ? parts.join(', ') : '0 รายการ'));
+      } catch (err) {
+        showToast('⚠️ ไฟล์ไม่ถูกต้องหรือไม่รองรับ');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  // ---------- Helpers ----------
+  function lowerSafe(s) { return (s || '').toLowerCase(); }
+
+  function relativeTime(ts) {
+    if (!Number.isFinite(ts)) return '';
+    let diff = Date.now() - ts;
+    if (diff < 0) diff = 0;
+    let min = 60 * 1000, hr = 60 * min, day = 24 * hr;
+    if (diff < min) return 'เมื่อสักครู่';
+    if (diff < hr) return Math.floor(diff / min) + ' นาทีที่แล้ว';
+    if (diff < day) return Math.floor(diff / hr) + ' ชั่วโมงที่แล้ว';
+    if (diff < 7 * day) return Math.floor(diff / day) + ' วันที่แล้ว';
+    let d = new Date(ts);
+    let dd = String(d.getDate()).padStart(2, '0');
+    let mm = String(d.getMonth() + 1).padStart(2, '0');
+    let yy = d.getFullYear() + 543;
+    return dd + '/' + mm + '/' + String(yy).slice(2);
+  }
+
+  function fullDateTime(ts) {
+    if (!Number.isFinite(ts)) return '';
+    let d = new Date(ts);
+    let dd = String(d.getDate()).padStart(2, '0');
+    let mm = String(d.getMonth() + 1).padStart(2, '0');
+    let yy = d.getFullYear() + 543;
+    let hh = String(d.getHours()).padStart(2, '0');
+    let min = String(d.getMinutes()).padStart(2, '0');
+    return 'แก้ไขล่าสุด ' + dd + '/' + mm + '/' + yy + ' ' + hh + ':' + min;
+  }
+
+  function getTagMeta(tagId) {
+    for (let i = 0; i < categories.length; i++) {
+      if (categories[i].id === tagId) return categories[i];
+    }
+    return null;
+  }
+
+  // First tag on the note that matches a currently-known category (skips
+  // stale/unknown tag ids left over from a renamed or removed category),
+  // or null if the note has no recognized tag.
+  function primaryTagId(note) {
+    for (let i = 0; i < note.tags.length; i++) {
+      if (getTagMeta(note.tags[i])) return note.tags[i];
+    }
+    return null;
+  }
+
+  let toastTimer = null;
+  function showToast(msg) {
+    els.toast.textContent = msg;
+    els.toast.classList.remove('hidden');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      els.toast.classList.add('hidden');
+    }, 1800);
+  }
+
+  // Safely append text with highlighted search matches (no innerHTML with user data)
+  function appendHighlighted(container, text, query) {
+    container.textContent = '';
+    let safeText = typeof text === 'string' ? text : '';
+    if (!query) {
+      container.appendChild(document.createTextNode(safeText));
+      return;
+    }
+    let lowerText = safeText.toLowerCase();
+    let lowerQuery = query.toLowerCase();
+    if (!lowerQuery) {
+      container.appendChild(document.createTextNode(safeText));
+      return;
+    }
+    let idx = 0;
+    let pos = lowerText.indexOf(lowerQuery, idx);
+    if (pos === -1) {
+      container.appendChild(document.createTextNode(safeText));
+      return;
+    }
+    while (pos !== -1) {
+      if (pos > idx) {
+        container.appendChild(document.createTextNode(safeText.slice(idx, pos)));
+      }
+      let mark = document.createElement('mark');
+      mark.textContent = safeText.slice(pos, pos + query.length);
+      container.appendChild(mark);
+      idx = pos + query.length;
+      pos = lowerText.indexOf(lowerQuery, idx);
+    }
+    if (idx < safeText.length) {
+      container.appendChild(document.createTextNode(safeText.slice(idx)));
+    }
+  }
+
+  // ---------- Rendering: tag filter row ----------
+  function renderTagFilterRow() {
+    els.tagFilterRow.textContent = '';
+    els.tagFilterRow.appendChild(buildManageChip());
+    categories.forEach(function (tag) {
+      let btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'chip focus-ring shrink-0 flex items-center px-3 h-9 rounded-full bg-panel2 border border-hair t-chip text-muted';
+      btn.style.setProperty('--chip-color', tag.color);
+      btn.dataset.active = String(state.activeTagFilter === tag.id);
+      if (state.activeTagFilter === tag.id) {
+        btn.classList.add('text-txt');
+      }
+      let label = document.createElement('span');
+      label.textContent = tag.emoji + ' ' + tag.label;
+      btn.appendChild(label);
+      btn.addEventListener('click', function () {
+        state.activeTagFilter = state.activeTagFilter === tag.id ? null : tag.id;
+        renderTagFilterRow();
+        renderList();
+      });
+      els.tagFilterRow.appendChild(btn);
+    });
+  }
+
+  function buildManageChip() {
+    let btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'chip focus-ring shrink-0 flex items-center px-3 h-9 rounded-full bg-panel2 border border-hair t-chip text-muted';
+    btn.textContent = '⚙️ จัดการ';
+    btn.setAttribute('aria-label', 'จัดการหมวดหมู่');
+    btn.addEventListener('click', openCatSheet);
+    return btn;
+  }
+
+  // ---------- Category manager ----------
+  function openCatSheet() {
+    resetCatForm();
+    renderCatList();
+    els.catSheet.inert = false;
+    els.catSheet.classList.remove('translate-y-full');
+  }
+
+  function closeCatSheet() {
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    els.catSheet.classList.add('translate-y-full');
+    els.catSheet.inert = true;
+    renderTagFilterRow();
+    renderList();
+    if (!els.editorSheet.inert) renderTagPicker();
+  }
+
+  function resetCatForm() {
+    state.editingCatId = null;
+    state.catColorIdx = categories.length % PALETTE.length;
+    els.catEmoji.value = DEFAULT_EMOJI;
+    els.catName.value = '';
+    els.catFormTitle.textContent = '➕ เพิ่มหมวดหมู่ใหม่';
+    els.btnCatSave.textContent = '➕ เพิ่ม';
+    els.btnCatCancelEdit.classList.add('hidden');
+    renderCatColors();
+  }
+
+  function startEditCat(id) {
+    let cat = getTagMeta(id);
+    if (!cat) return;
+    state.editingCatId = id;
+    let idx = PALETTE.findIndex(function (p) { return p.color.toLowerCase() === cat.color.toLowerCase(); });
+    state.catColorIdx = idx === -1 ? 0 : idx;
+    els.catEmoji.value = cat.emoji;
+    els.catName.value = cat.label;
+    els.catFormTitle.textContent = '✏️ แก้ไขหมวดหมู่';
+    els.btnCatSave.textContent = '💾 บันทึก';
+    els.btnCatCancelEdit.classList.remove('hidden');
+    renderCatColors();
+    els.catName.focus();
+  }
+
+  function renderCatColors() {
+    els.catColors.textContent = '';
+    PALETTE.forEach(function (p, i) {
+      let sw = document.createElement('button');
+      sw.type = 'button';
+      sw.className = 'swatch focus-ring shrink-0';
+      sw.style.backgroundColor = p.color;
+      sw.dataset.active = String(i === state.catColorIdx);
+      sw.setAttribute('aria-label', 'เลือกสีที่ ' + (i + 1));
+      sw.addEventListener('click', function () { state.catColorIdx = i; renderCatColors(); });
+      els.catColors.appendChild(sw);
+    });
+  }
+
+  function countNotesInCat(id) {
+    return state.notes.filter(function (n) { return n.tags.indexOf(id) !== -1; }).length;
+  }
+
+  function renderCatList() {
+    els.catList.textContent = '';
+    els.catCount.textContent = '📚 หมวดหมู่ทั้งหมด ' + categories.length + ' / ' + MAX_CATEGORIES;
+
+    if (categories.length === 0) {
+      let empty = document.createElement('p');
+      empty.className = 't-snippet text-muted text-center pt-4';
+      empty.textContent = '🫥 ยังไม่มีหมวดหมู่ เพิ่มหมวดแรกได้เลย';
+      els.catList.appendChild(empty);
+      return;
+    }
+
+    categories.forEach(function (cat) {
+      let row = document.createElement('div');
+      row.className = 'flex items-center gap-2 bg-panel border border-hair rounded-2xl px-3 py-2 mb-2';
+
+      let dot = document.createElement('span');
+      dot.className = 'group-dot shrink-0';
+      dot.style.backgroundColor = cat.color;
+      row.appendChild(dot);
+
+      let name = document.createElement('span');
+      name.className = 't-card-title font-medium text-txt truncate min-w-0 flex-1';
+      name.textContent = cat.emoji + ' ' + cat.label;
+      row.appendChild(name);
+
+      let cnt = document.createElement('span');
+      cnt.className = 'font-data t-meta text-faint shrink-0';
+      cnt.textContent = countNotesInCat(cat.id) + ' โน้ต';
+      row.appendChild(cnt);
+
+      let edit = document.createElement('button');
+      edit.type = 'button';
+      edit.className = 'btn-press focus-ring w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0';
+      edit.textContent = '✏️';
+      edit.setAttribute('aria-label', 'แก้ไขหมวด ' + cat.label);
+      edit.addEventListener('click', function () { startEditCat(cat.id); });
+      row.appendChild(edit);
+
+      let del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'btn-press focus-ring w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0';
+      del.textContent = '🗑️';
+      del.setAttribute('aria-label', 'ลบหมวด ' + cat.label);
+      del.addEventListener('click', function () { requestDeleteCat(cat.id); });
+      row.appendChild(del);
+
+      els.catList.appendChild(row);
+    });
+  }
+
+  function saveCat() {
+    let label = els.catName.value.trim();
+    let emoji = firstGrapheme(els.catEmoji.value) || DEFAULT_EMOJI;
+    if (!label) { showToast('⚠️ กรุณาใส่ชื่อหมวดหมู่'); els.catName.focus(); return; }
+
+    let dup = categories.some(function (t) { return t.id !== state.editingCatId && t.label.toLowerCase() === label.toLowerCase(); });
+    if (dup) { showToast('⚠️ มีหมวดหมู่ชื่อนี้อยู่แล้ว'); return; }
+
+    let p = PALETTE[state.catColorIdx] || PALETTE[0];
+    let existing = state.editingCatId ? getTagMeta(state.editingCatId) : null;
+
+    if (existing) {
+      existing.emoji = emoji; existing.label = label; existing.color = p.color; existing.textColor = p.textColor;
+    } else {
+      if (categories.length >= MAX_CATEGORIES) { showToast('⚠️ สร้างได้สูงสุด ' + MAX_CATEGORIES + ' หมวดหมู่'); return; }
+      categories.push({ id: makeCatId(), emoji: emoji, label: label, color: p.color, textColor: p.textColor });
+    }
+
+    if (!saveCategories()) return;
+    showToast(existing ? '✅ แก้ไขหมวดหมู่แล้ว' : '✅ เพิ่มหมวดหมู่แล้ว');
+    resetCatForm();
+    renderCatList();
+  }
+
+  function requestDeleteCat(id) {
+    let cat = getTagMeta(id);
+    if (!cat) return;
+    let used = countNotesInCat(id);
+    state.confirmMode = 'deleteCat';
+    state.pendingDeleteCatId = id;
+    els.confirmTitle.textContent = '🗑️ ลบหมวด “' + cat.label + '” ใช่ไหม?';
+    els.confirmSub.textContent = used
+      ? '📝 โน้ต ' + used + ' รายการจะไม่ถูกลบ แต่จะถูกถอดออกจากหมวดนี้'
+      : '⚠️ การลบไม่สามารถย้อนกลับได้';
+    els.btnConfirmDelete.textContent = '🗑️ ลบหมวดหมู่';
+    openConfirm();
+  }
+
+  function deleteCategory(id) {
+    categories = categories.filter(function (t) { return t.id !== id; });
+    state.notes.forEach(function (n) { n.tags = n.tags.filter(function (t) { return t !== id; }); });
+    state.editorTags = state.editorTags.filter(function (t) { return t !== id; });
+    if (state.activeTagFilter === id) state.activeTagFilter = null;
+    if (state.editingCatId === id) resetCatForm();
+    saveNotes();
+    saveCategories();
+    renderCatList();
+    showToast('🗑️ ลบหมวดหมู่แล้ว');
+  }
+
+  // ---------- Rendering: list ----------
+  function getFilteredNotes() {
+    let query = lowerSafe(state.searchQuery.trim());
+    return state.notes.filter(function (n) {
+      if (state.activeTagFilter && n.tags.indexOf(state.activeTagFilter) === -1) return false;
+      if (!query) return true;
+      let title = lowerSafe(n.title);
+      let content = lowerSafe(n.content);
+      return title.indexOf(query) !== -1 || content.indexOf(query) !== -1;
+    }).sort(function (a, b) {
+      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+      return b.updatedAt - a.updatedAt;
+    });
+  }
+
+  function renderList() {
+    let query = state.searchQuery.trim();
+    let filtered = getFilteredNotes();
+
+    els.noteCountLabel.textContent = '🗂️ ' + state.notes.length + ' โน้ต' + (query || state.activeTagFilter ? ' · 🔎 พบ ' + filtered.length + ' รายการ' : '');
+
+    els.listContainer.textContent = '';
+
+    if (state.notes.length === 0) {
+      els.emptyState.classList.remove('hidden');
+      q('empty-icon').textContent = '📝';
+      q('empty-title').textContent = '✨ ยังไม่มีโน้ต';
+      q('empty-sub').textContent = 'แตะปุ่ม ➕ ด้านล่างเพื่อเริ่มจดโน้ตแรกของคุณ';
+      return;
+    }
+
+    if (filtered.length === 0) {
+      els.emptyState.classList.remove('hidden');
+      q('empty-icon').textContent = '🔎';
+      q('empty-title').textContent = '🔎 ไม่พบโน้ตที่ค้นหา';
+      q('empty-sub').textContent = '🙈 ลองใช้คำค้นหาอื่น หรือล้างตัวกรองแท็ก';
+      return;
+    }
+
+    els.emptyState.classList.add('hidden');
+
+    let groupedView = !query && !state.activeTagFilter;
+
+    if (!groupedView) {
+      filtered.forEach(function (note, idx) {
+        els.listContainer.appendChild(buildNoteCard(note, query, idx));
+      });
+      return;
+    }
+
+    let groups = buildCategoryGroups(filtered);
+    let globalIdx = 0;
+    groups.forEach(function (group) {
+      els.listContainer.appendChild(buildGroupHeader(group));
+      group.notes.forEach(function (note) {
+        els.listContainer.appendChild(buildNoteCard(note, '', globalIdx));
+        globalIdx++;
+      });
+    });
+  }
+
+  function sortByRecency(list) {
+    return list.slice().sort(function (a, b) { return b.updatedAt - a.updatedAt; });
+  }
+
+  // Groups notes for the default (no search / no tag filter) view:
+  // 📌 pinned first, then one section per tag category in categories order,
+  // then a final section for notes with no tags at all.
+  function buildCategoryGroups(notes) {
+    let groups = [];
+
+    let pinned = sortByRecency(notes.filter(function (n) { return n.pinned; }));
+    if (pinned.length) {
+      groups.push({ emoji: '📌', label: 'ปักหมุด', color: '#EED889', notes: pinned });
+    }
+
+    categories.forEach(function (tag) {
+      let list = sortByRecency(notes.filter(function (n) {
+        return !n.pinned && primaryTagId(n) === tag.id;
+      }));
+      if (list.length) {
+        groups.push({ emoji: tag.emoji, label: tag.label, color: tag.color, notes: list });
+      }
+    });
+
+    let untagged = sortByRecency(notes.filter(function (n) {
+      return !n.pinned && primaryTagId(n) === null;
+    }));
+    if (untagged.length) {
+      groups.push({ emoji: '🗒️', label: 'ไม่มีหมวดหมู่', color: '#8E99AD', notes: untagged });
+    }
+
+    return groups;
+  }
+
+  function buildGroupHeader(group) {
+    let header = document.createElement('div');
+    header.className = 'flex items-center gap-2 mb-2 mt-3';
+
+    let dot = document.createElement('span');
+    dot.className = 'group-dot shrink-0';
+    dot.style.backgroundColor = group.color;
+    header.appendChild(dot);
+
+    let label = document.createElement('h2');
+    label.className = 'font-display t-group font-semibold text-txt';
+    label.textContent = group.emoji + ' ' + group.label;
+    header.appendChild(label);
+
+    let count = document.createElement('span');
+    count.className = 'font-data t-meta text-faint bg-panel2 border border-hair rounded-full px-2 py-0-5 shrink-0';
+    count.textContent = group.notes.length + ' โน้ต';
+    header.appendChild(count);
+
+    return header;
+  }
+
+  function buildNoteCard(note, query, idx) {
+    let card = document.createElement('div');
+    card.setAttribute('role', 'button');
+    card.tabIndex = 0;
+    card.className = 'note-card card-enter btn-press focus-ring w-full text-left bg-panel border border-hair rounded-2xl mb-2 overflow-hidden flex';
+    card.style.animationDelay = (Math.min(idx, 8) * 0.03) + 's';
+
+    let primaryTag = getTagMeta(primaryTagId(note));
+    let stripe = document.createElement('span');
+    stripe.className = 'tab-dot shrink-0';
+    stripe.style.backgroundColor = primaryTag ? primaryTag.color : '#8E99AD';
+    card.appendChild(stripe);
+
+    let body = document.createElement('div');
+    body.className = 'flex-1 px-3 py-3 min-w-0';
+
+    let topRow = document.createElement('div');
+    topRow.className = 'flex items-start justify-between gap-2 mb-1';
+
+    let titleEl = document.createElement('h3');
+    titleEl.className = 'font-display t-card-title font-semibold text-txt truncate min-w-0 flex-1';
+    appendHighlighted(titleEl, note.title || '🏷️ ไม่มีชื่อเรื่อง', query);
+
+    topRow.appendChild(titleEl);
+
+    if (note.pinned) {
+      let pin = document.createElement('span');
+      pin.className = 'text-sm shrink-0';
+      pin.textContent = '📌';
+      topRow.appendChild(pin);
+    }
+    body.appendChild(topRow);
+
+    if (note.content) {
+      let snippet = document.createElement('p');
+      snippet.className = 'snippet-line t-snippet text-muted mb-2';
+      appendHighlighted(snippet, note.content, query);
+      body.appendChild(snippet);
+    }
+
+    let bottomRow = document.createElement('div');
+    bottomRow.className = 'flex items-center justify-between gap-2';
+
+    let tagsWrap = document.createElement('div');
+    tagsWrap.className = 'flex gap-1-5 flex-wrap min-w-0';
+    let visibleTags = note.tags.slice(0, 3);
+    visibleTags.forEach(function (tagId) {
+      let meta = getTagMeta(tagId);
+      if (!meta) return;
+      let pill = document.createElement('span');
+      pill.className = 'text-sm px-2 py-0-5 rounded-full bg-panel3 shrink-0';
+      pill.style.color = meta.textColor;
+      pill.textContent = meta.emoji + ' ' + meta.label;
+      tagsWrap.appendChild(pill);
+    });
+    let extraCount = note.tags.length - visibleTags.length;
+    if (extraCount > 0) {
+      let morePill = document.createElement('span');
+      morePill.className = 'text-sm px-2 py-0-5 rounded-full bg-panel3 text-faint shrink-0';
+      morePill.textContent = '+' + extraCount;
+      tagsWrap.appendChild(morePill);
+    }
+    bottomRow.appendChild(tagsWrap);
+
+    let timeEl = document.createElement('span');
+    timeEl.className = 'font-data t-meta text-faint shrink-0';
+    timeEl.textContent = '🕒 ' + relativeTime(note.updatedAt);
+    bottomRow.appendChild(timeEl);
+
+    body.appendChild(bottomRow);
+    card.appendChild(body);
+
+    card.addEventListener('click', function () { openEditor(note.id); });
+    card.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEditor(note.id); }
+    });
+
+    return card;
+  }
+
+  // ---------- Editor ----------
+  function openEditor(noteId) {
+    state.editingId = noteId || null;
+    let note = noteId ? state.notes.find(function (n) { return n.id === noteId; }) : null;
+
+    els.editorTitle.value = note ? note.title : '';
+    els.editorContent.value = note ? note.content : '';
+    state.editorTags = note ? note.tags.slice() : [];
+    state.editorPinned = note ? !!note.pinned : false;
+
+    els.editorMetaTime.textContent = note ? '🕒 ' + fullDateTime(note.updatedAt) : '🆕 โน้ตใหม่';
+    els.btnEditorDelete.classList.toggle('hidden', !note);
+    updatePinButton();
+    renderTagPicker();
+    updateCharCount();
+
+    state.editorSnapshot = {
+      title: els.editorTitle.value,
+      content: els.editorContent.value,
+      tags: state.editorTags.slice().sort().join(','),
+      pinned: state.editorPinned,
+    };
+
+    els.editorSheet.inert = false;
+    els.editorSheet.classList.remove('translate-y-full');
+    if (!note) setTimeout(function () { els.editorTitle.focus(); }, 320);
+  }
+
+  function isEditorDirty() {
+    if (!state.editorSnapshot) return false;
+    let snap = state.editorSnapshot;
+    return (
+      els.editorTitle.value !== snap.title ||
+      els.editorContent.value !== snap.content ||
+      state.editorTags.slice().sort().join(',') !== snap.tags ||
+      state.editorPinned !== snap.pinned
+    );
+  }
+
+  function closeEditor(force) {
+    if (!force && isEditorDirty()) {
+      requestDiscard();
+      return;
+    }
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    els.editorSheet.classList.add('translate-y-full');
+    els.editorSheet.inert = true;
+    state.editingId = null;
+    state.editorSnapshot = null;
+  }
+
+  function updatePinButton() {
+    els.btnEditorPin.classList.toggle('pin-on', state.editorPinned);
+    els.btnEditorPin.setAttribute('aria-pressed', String(state.editorPinned));
+    els.btnEditorPin.style.opacity = state.editorPinned ? '1' : '0.55';
+  }
+
+  function renderTagPicker() {
+    els.tagPicker.textContent = '';
+    categories.forEach(function (tag) {
+      let active = state.editorTags.indexOf(tag.id) !== -1;
+      let chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'chip focus-ring flex items-center px-3 h-9 rounded-full bg-panel2 border border-hair t-chip';
+      chip.classList.add(active ? 'text-txt' : 'text-muted');
+      chip.dataset.active = String(active);
+      chip.style.setProperty('--chip-color', tag.color);
+
+      let label = document.createElement('span');
+      label.textContent = tag.emoji + ' ' + tag.label;
+      chip.appendChild(label);
+
+      chip.addEventListener('click', function () {
+        let pos = state.editorTags.indexOf(tag.id);
+        if (pos === -1) {
+          state.editorTags.push(tag.id);
+        } else {
+          state.editorTags.splice(pos, 1);
+        }
+        renderTagPicker();
+      });
+      els.tagPicker.appendChild(chip);
+    });
+    els.tagPicker.appendChild(buildManageChip());
+  }
+
+  function updateCharCount() {
+    let len = els.editorContent.value.length;
+    els.editorCharCount.textContent = '🔤 ' + len + ' / 8000';
+  }
+
+  function saveCurrentNote() {
+    let title = els.editorTitle.value.trim();
+    let content = els.editorContent.value.trim();
+
+    if (!title && !content) {
+      showToast('⚠️ กรุณาใส่หัวข้อหรือเนื้อหาก่อนบันทึก');
+      return;
+    }
+
+    let now = Date.now();
+
+    let existing = state.editingId
+      ? state.notes.find(function (n) { return n.id === state.editingId; })
+      : null;
+
+    if (existing) {
+      existing.title = title;
+      existing.content = content;
+      existing.tags = state.editorTags.slice();
+      existing.pinned = state.editorPinned;
+      existing.updatedAt = now;
+    } else {
+      state.notes.push({
+        id: makeId(),
+        title: title,
+        content: content,
+        tags: state.editorTags.slice(),
+        pinned: state.editorPinned,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+
+    if (saveNotes()) {
+      showToast('✅ บันทึกโน้ตแล้ว');
+      closeEditor(true);
+      renderList();
+    }
+  }
+
+  // ---------- Delete / discard confirm flow ----------
+  function requestDelete(noteId) {
+    state.confirmMode = 'delete';
+    state.pendingDeleteId = noteId;
+    els.confirmTitle.textContent = '🗑️ ลบโน้ตนี้ใช่ไหม?';
+    els.confirmSub.textContent = '⚠️ การลบไม่สามารถย้อนกลับได้';
+    els.btnConfirmDelete.textContent = '🗑️ ลบโน้ต';
+    openConfirm();
+  }
+
+  function requestDiscard() {
+    state.confirmMode = 'discard';
+    els.confirmTitle.textContent = '👋 ทิ้งการแก้ไขใช่ไหม?';
+    els.confirmSub.textContent = '⚠️ การเปลี่ยนแปลงที่ยังไม่บันทึกจะหายไป';
+    els.btnConfirmDelete.textContent = '👋 ทิ้งการแก้ไข';
+    openConfirm();
+  }
+
+  function openConfirm() {
+    els.confirmSheet.inert = false;
+    els.confirmSheet.classList.remove('pointer-events-none', 'opacity-0');
+    els.btnConfirmCancel.focus();
+  }
+
+  function closeConfirm() {
+    state.pendingDeleteCatId = null;
+    els.confirmSheet.classList.add('pointer-events-none', 'opacity-0');
+    els.confirmSheet.inert = true;
+    state.pendingDeleteId = null;
+  }
+
+  function handleConfirmAction() {
+    if (state.confirmMode === 'deleteCat') {
+      let catId = state.pendingDeleteCatId;
+      closeConfirm();
+      if (catId) deleteCategory(catId);
+      return;
+    }
+    if (state.confirmMode === 'discard') {
+      closeConfirm();
+      closeEditor(true);
+      return;
+    }
+    let id = state.pendingDeleteId;
+    if (!id) return;
+    state.notes = state.notes.filter(function (n) { return n.id !== id; });
+    saveNotes();
+    closeConfirm();
+    closeEditor(true);
+    renderList();
+    showToast('🗑️ ลบโน้ตแล้ว');
+  }
+
+  // ---------- Wire events ----------
+  function wireEvents() {
+    els.btnOpenSearch.addEventListener('click', function () {
+      els.headerNormal.classList.add('hidden');
+      els.headerSearch.classList.remove('hidden');
+      els.headerSearch.classList.add('flex');
+      setTimeout(function () { els.searchInput.focus(); }, 50);
+    });
+
+    els.btnExport.addEventListener('click', exportNotesToExcel);
+
+    els.btnImport.addEventListener('click', function () {
+      els.importFileInput.click();
+    });
+
+    els.importFileInput.addEventListener('change', function (e) {
+      let file = e.target.files && e.target.files[0];
+      if (file) importNotesFromExcel(file);
+      els.importFileInput.value = '';
+    });
+
+    els.btnCloseSearch.addEventListener('click', function () {
+      state.searchQuery = '';
+      els.searchInput.value = '';
+      els.btnClearSearch.classList.add('hidden');
+      els.headerSearch.classList.add('hidden');
+      els.headerSearch.classList.remove('flex');
+      els.headerNormal.classList.remove('hidden');
+      renderList();
+    });
+
+    els.searchInput.addEventListener('input', function () {
+      state.searchQuery = els.searchInput.value;
+      els.btnClearSearch.classList.toggle('hidden', state.searchQuery.length === 0);
+      renderList();
+    });
+
+    els.btnClearSearch.addEventListener('click', function () {
+      state.searchQuery = '';
+      els.searchInput.value = '';
+      els.btnClearSearch.classList.add('hidden');
+      els.searchInput.focus();
+      renderList();
+    });
+
+    els.btnAddNote.addEventListener('click', function () { openEditor(null); });
+    els.btnEditorCancel.addEventListener('click', function () { closeEditor(false); });
+    els.btnEditorSave.addEventListener('click', saveCurrentNote);
+    els.editorContent.addEventListener('input', updateCharCount);
+
+    els.btnEditorPin.addEventListener('click', function () {
+      state.editorPinned = !state.editorPinned;
+      updatePinButton();
+    });
+
+    els.btnEditorDelete.addEventListener('click', function () {
+      if (state.editingId) requestDelete(state.editingId);
+    });
+
+    els.btnConfirmCancel.addEventListener('click', closeConfirm);
+    els.confirmBackdrop.addEventListener('click', closeConfirm);
+    els.btnConfirmDelete.addEventListener('click', handleConfirmAction);
+
+    els.btnCatClose.addEventListener('click', closeCatSheet);
+    els.btnCatSave.addEventListener('click', saveCat);
+    els.btnCatCancelEdit.addEventListener('click', resetCatForm);
+    els.catName.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); saveCat(); } });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      if (!els.confirmSheet.inert) closeConfirm();
+      else if (!els.catSheet.inert) closeCatSheet();
+      else if (!els.editorSheet.inert) closeEditor(false);
+    });
+  }
+
+  // ---------- Init ----------
+  function init() {
+    cacheEls();
+    state.notes = loadNotes();
+    categories = loadCategories();
+    wireEvents();
+    renderTagFilterRow();
+    renderList();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
 </script>
 </body>
 </html>
